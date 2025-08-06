@@ -14,11 +14,77 @@ def criar_arquivos():
                 writer.writerow(campos)
         except FileExistsError:
             pass
+        
+def menu():
+    while True:
+        print("\n🌟 BANCO SIMPLIFICADO - MENU PRINCIPAL 🌟")
+        print("1️⃣ - Cadastrar Usuário")
+        print("2️⃣ - Depositar")
+        print("3️⃣ - Sacar")
+        print("4️⃣ - Ver Extrato")
+        print("5️⃣ - Sair")
+        
+        escolha = input("👉 Escolha uma opção: ").strip()
+        
+        if escolha == '1':
+            cpf = input("🔹 CPF: ").strip()
+            if cpf_ja_cadastrado(cpf):
+                print("❌ CPF já cadastrado.")
+                continue
+
+            conta = input("🔹 Número da Conta: ").strip()
+            if conta_ja_cadastrada(conta):
+                print("❌ Conta já cadastrada.")
+                continue
+
+            nome = input("🔹 Nome: ").strip()
+            cadastrar_usuario(nome, cpf, conta)
+            print(f"✅ Usuário '{nome}' cadastrado com sucesso!")
+
+        elif escolha == '2':
+            conta = input("🔹 Número da Conta: ").strip()
+            if not buscar_usuario(conta):
+                print("❌ Conta não encontrada.")
+                continue
+            valor = float(input("💰 Valor para depósito: "))
+            depositar(conta, valor)
+
+        elif escolha == '3':
+            conta = input("🔹 Número da Conta: ").strip()
+            if not buscar_usuario(conta):
+                print("❌ Conta não encontrada.")
+                continue
+            valor = float(input("💸 Valor para saque: "))
+            sacar(conta, valor)
+
+        elif escolha == '4':
+            conta = input("🔹 Número da Conta: ").strip()
+            if not buscar_usuario(conta):
+                print("❌ Conta não encontrada.")
+                continue
+            extrato(conta)
+
+        elif escolha == '5':
+            print("\n👋 Encerrando o sistema. Obrigado por usar o Banco Simplificado.")
+            break
+
+        else:
+            print("❌ Opção inválida. Tente novamente.")
 
 def cadastrar_usuario(nome, cpf, numero_conta):
     with open(ARQUIVO_USUARIOS, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([cpf, nome, numero_conta, 0.0])
+
+def cpf_ja_cadastrado(cpf):
+    with open(ARQUIVO_USUARIOS, 'r') as f:
+        reader = csv.DictReader(f)
+        return any(linha['cpf'] == cpf for linha in reader)
+
+def conta_ja_cadastrada(conta):
+    with open(ARQUIVO_USUARIOS, 'r') as f:
+        reader = csv.DictReader(f)
+        return any(linha['conta'] == conta for linha in reader)
 
 def buscar_usuario(conta):
     with open(ARQUIVO_USUARIOS, 'r') as f:
@@ -103,13 +169,5 @@ def extrato(conta):
 # Inicialização
 criar_arquivos()
 
-# Exemplos de uso
-cadastrar_usuario("José Silva", "12345678903", "0002")
-
-depositar("0002", 1500)
-sacar("0002", 200)
-sacar("0002", 600) # Deve falhar por limite diário
-sacar("0002", 500)
-sacar("0002", 1300)  # Deve falhar por limite 
-
-extrato("0002")
+# Inicia o menu principal
+menu()
